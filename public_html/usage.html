@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+	<meta charset="utf-8" />
+	<title>Aria2 & YAAW 使用说明</title>
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, width=device-width">
+	<meta name="author" content="aa65535" />
+	<link href="favicon.ico" rel="shortcut icon" type="image/ico" />
+	<meta name="keywords" content="aria2,yaaw,aria2使用说明,aria2配置说明,aria2脚本" />
+	<meta name="description" content="Aria2 & YAAW 使用说明" />
+	<style type="text/css">
+		body {
+			font: 12pt 'Hiragino Sans GB','Wenquanyi Micro Hei','Microsoft YaHei',sans-serif;
+			font-size: 12pt;
+			color: #000000;
+			margin-bottom: 2em;
+		}
+		h1 {
+			text-align: center;
+		}
+		a {
+			text-decoration: none;
+		}
+		b {
+			font-weight: 700;
+		}
+		.code, code {
+			font-family: Monaco,Consolas,monospace;
+			font-size: 10pt;
+			background: #F7F7F7;
+		}
+		.code {
+			width: 45em;
+			margin: 0.5em 0;
+			padding: 0 1.2em;
+			border: 1px solid #DDD;
+			border-left: 8px solid #DDD;
+			line-height: 1.5;
+			display: block;
+		}
+		.content {
+			line-height: 1.7;
+			font-size: 10pt;
+			margin-left: 1em;
+		}
+		.sc1 {
+			color: #008000;
+		}
+		.sc3 {
+			font-weight: bold;
+			color: #FF0000;
+		}
+	</style>
+</head>
+<body>
+	<h1>Aria2 & YAAW 使用说明</h1>
+	<hr>
+	<h2>Aria2 配置说明</h2>
+	<div class="content">
+		<ul>
+			<li><b>完整选项说明请参考 <a href="http://aria2.sourceforge.net/manual/en/html/aria2c.html" target="_blank">Aria2 Manual</a></b></li>
+			<li><b>参数 <code>--dir</code> <code>--input-file</code> <code>--save-session</code> 根据实际情况修改路径</b></li>
+			<li><b>配置示例, 可根据需要修改各项参数</b>
+			<pre class="code">
+<span class="sc1">## '#'开头为注释内容, 选项都有相应的注释说明, 根据需要修改 ##
+## 被注释的选项填写的是默认值, 建议在需要修改时再取消注释  ##</span>
+<span class="sc0"></span>
+<span class="sc1">## 文件保存相关 ##</span>
+<span class="sc0"></span>
+<span class="sc1"># 文件的保存路径(可使用绝对路径或相对路径), 默认: 当前启动位置</span>
+<span class="sc5">dir</span><span class="sc3">=</span><span class="sc0">~/downloads</span>
+<span class="sc1"># 启用磁盘缓存, 0为禁用缓存, 需1.16以上版本, 默认:16M
+#disk-cache=32M
+# 文件预分配方式, 能有效降低磁盘碎片, 默认:prealloc
+# 预分配所需时间: none &lt; falloc ? trunc &lt; prealloc
+# falloc和trunc则需要文件系统和内核支持
+# NTFS建议使用falloc, EXT3/4建议trunc, MAC 下需要注释此项</span>
+<span class="sc5">file-allocation</span><span class="sc3">=</span><span class="sc0">none</span>
+<span class="sc1"># 断点续传</span>
+<span class="sc5">continue</span><span class="sc3">=</span><span class="sc0">true</span>
+<span class="sc0"></span>
+<span class="sc1">## 下载连接相关 ##</span>
+<span class="sc0"></span>
+<span class="sc1"># 最大同时下载任务数, 运行时可修改, 默认:5</span>
+<span class="sc5">max-concurrent-downloads</span><span class="sc3">=</span><span class="sc0">1</span>
+<span class="sc1"># 同一服务器连接数, 添加时可指定, 默认:1</span>
+<span class="sc5">max-connection-per-server</span><span class="sc3">=</span><span class="sc0">5</span>
+<span class="sc1"># 最小文件分片大小, 添加时可指定, 取值范围1M -1024M, 默认:20M
+# 假定size=10M, 文件为20MiB 则使用两个来源下载; 文件为15MiB 则使用一个来源下载</span>
+<span class="sc5">min-split-size</span><span class="sc3">=</span><span class="sc0">10M</span>
+<span class="sc1"># 单个任务最大线程数, 添加时可指定, 默认:5</span>
+<span class="sc5">split</span><span class="sc3">=</span><span class="sc0">5</span>
+<span class="sc1"># 整体下载速度限制, 运行时可修改, 默认:0
+#max-overall-download-limit=0
+# 单个任务下载速度限制, 默认:0
+#max-download-limit=0
+# 整体上传速度限制, 运行时可修改, 默认:0
+#max-overall-upload-limit=0
+# 单个任务上传速度限制, 默认:0
+#max-upload-limit=0
+# 禁用IPv6, 默认:false</span>
+<span class="sc5">disable-ipv6</span><span class="sc3">=</span><span class="sc0">true</span>
+<span class="sc0"></span>
+<span class="sc1">## 进度保存相关 ##</span>
+<span class="sc0"></span>
+<span class="sc1"># 从会话文件中读取下载任务</span>
+<span class="sc5">input-file</span><span class="sc3">=</span><span class="sc0">/etc/aria2/aria2.session</span>
+<span class="sc1"># 在Aria2退出时保存`错误/未完成`的下载任务到会话文件</span>
+<span class="sc5">save-session</span><span class="sc3">=</span><span class="sc0">/etc/aria2/aria2.session</span>
+<span class="sc1"># 定时保存会话, 0为退出时才保存, 需1.16.1以上版本, 默认:0
+#save-session-interval=60</span>
+<span class="sc0"></span>
+<span class="sc1">## RPC相关设置 ##</span>
+<span class="sc0"></span>
+<span class="sc1"># 启用RPC, 默认:false</span>
+<span class="sc5">enable-rpc</span><span class="sc3">=</span><span class="sc0">true</span>
+<span class="sc1"># 允许所有来源, 默认:false</span>
+<span class="sc5">rpc-allow-origin-all</span><span class="sc3">=</span><span class="sc0">true</span>
+<span class="sc1"># 允许非外部访问, 默认:false</span>
+<span class="sc5">rpc-listen-all</span><span class="sc3">=</span><span class="sc0">true</span>
+<span class="sc1"># 事件轮询方式, 取值:[epoll, kqueue, port, poll, select], 不同系统默认值不同
+#event-poll=select
+<span class="sc1"># RPC监听端口, 端口被占用时可以修改, 默认:6800
+#rpc-listen-port=6800</span>
+<span class="sc1"># 设置的RPC授权令牌, v1.18.4新增功能, 取代 --rpc-user 和 --rpc-passwd 选项
+#rpc-secret=&lt;TOKEN&gt;</span>
+<span class="sc1"># 设置的RPC访问用户名, 此选项新版已废弃, 建议改用 --rpc-secret 选项
+#rpc-user=&lt;USER&gt;</span>
+<span class="sc1"># 设置的RPC访问密码, 此选项新版已废弃, 建议改用 --rpc-secret 选项
+#rpc-passwd=&lt;PASSWD&gt;</span>
+<span class="sc0"></span>
+<span class="sc1">## BT/PT下载相关 ##</span>
+<span class="sc0"></span>
+<span class="sc1"># 当下载的是一个种子(以.torrent结尾)时, 自动开始BT任务, 默认:true
+#follow-torrent=true
+# BT监听端口, 当端口被屏蔽时使用, 默认:6881-6999</span>
+<span class="sc5">listen-port</span><span class="sc3">=</span><span class="sc0">51413</span>
+<span class="sc1"># 单个种子最大连接数, 默认:55
+#bt-max-peers=55
+# 打开DHT功能, PT需要禁用, 默认:true</span>
+<span class="sc5">enable-dht</span><span class="sc3">=</span><span class="sc0">false</span>
+<span class="sc1"># 打开IPv6 DHT功能, PT需要禁用
+#enable-dht6=false
+# DHT网络监听端口, 默认:6881-6999
+#dht-listen-port=6881-6999
+# 本地节点查找, PT需要禁用, 默认:false
+#bt-enable-lpd=false
+# 种子交换, PT需要禁用, 默认:true</span>
+<span class="sc5">enable-peer-exchange</span><span class="sc3">=</span><span class="sc0">false</span>
+<span class="sc1"># 每个种子限速, 对少种的PT很有用, 默认:50K
+#bt-request-peer-speed-limit=50K
+# 客户端伪装, PT需要</span>
+<span class="sc5">peer-id-prefix</span><span class="sc3">=</span><span class="sc0">-TR2770-</span>
+<span class="sc5">user-agent</span><span class="sc3">=</span><span class="sc0">Transmission/2.77</span>
+<span class="sc1"># 当种子的分享率达到这个数时, 自动停止做种, 0为一直做种, 默认:1.0</span>
+<span class="sc5">seed-ratio</span><span class="sc3">=</span><span class="sc0">0</span>
+<span class="sc1"># 强制保存会话, 即使任务已经完成, 默认:false
+# 较新的版本开启后会在任务完成后依然保留.aria2文件
+#force-save=false
+# BT校验相关, 默认:true
+#bt-hash-check-seed=true
+# 继续之前的BT任务时, 无需再次校验, 默认:false</span>
+<span class="sc5">bt-seed-unverified</span><span class="sc3">=</span><span class="sc0">true</span>
+<span class="sc1"># 保存磁力链接元数据为种子文件(.torrent文件), 默认:false</span>
+<span class="sc5">bt-save-metadata</span><span class="sc3">=</span><span class="sc0">true</span></pre>
+			</li>
+		</ul>
+	</div>
+	<h2>Aria2 相关下载</h2>
+	<div class="content">
+		<ul>
+			<li><a href="https://sourceforge.net/projects/aria2/files/stable/" target="_blank">Aria2 源码/程序下载</a></li>
+			<li><a href="archiver/aria2.conf" target="_blank">配置示例下载</a></li>
+			<li><a href="archiver/aria2.zip" target="_blank">Windows 懒人包下载 (包含以下文件)</a>
+				<pre class="code">aria2.conf    <span class="sc1"># 配置文件 可以自己根据说明修改</span>
+aria2.exe     <span class="sc1"># 启动文件 使用这个来启动 aria2</span>
+aria2.session <span class="sc1"># 任务保存文件 未完成任务会保存在这里</span>
+aria2c.exe    <span class="sc1"># 32位命令行主程序</span>
+README.md     <span class="sc1"># README</span>
+Aria2Data     <span class="sc1"># 下载目录 默认下载文件会保存在这里</span></pre>
+			</li>
+		</ul>
+	</div>
+	<h2>YAAW 使用说明</h2>
+	<div class="content">
+		<b>JSON-RPC Path</b>
+		<ul>
+			<li><code>JSON-RPC Path</code> 默认为: <code>http://localhost:6800/jsonrpc</code></li>
+			<li>如果提示 <code>Aria2 RPC 服务器错误</code> 按照以下方法修改
+				<ul style="list-style-type: square;">
+					<li><b><code>host</code></b>: 指运行 Aria2 所在机器的 IP 或者名字</li>
+					<li><b><code>port</code></b>: 使用 <code>--rpc-listen-port</code> 选项设置的端口, 未设置则是 <code>6800</code></li>
+				</ul>
+				<ul style="list-style-type: circle;">
+					<li>普通情况设置为: <code>http://host:port/jsonrpc</code></li>
+					<li>使用 <code>--rpc-secret=xxxxxx</code> 选项设置为: <code>http://token:xxxxxx@host:port/jsonrpc</code></li>
+					<li>使用 <code>--rpc-user=user --rpc-passwd=pwd </code> 选项设置为: <code>http://user:pwd@host:port/jsonrpc</code></li>
+				</ul>
+			</li>
+		</ul>
+		<b>Tips</b>
+		<ul>
+			<li>在 YAAW 中对 Aria2 的设置会在 Aria2 重启后丢失, 必要的设置请写入配置文件</li>
+			<li>已经下载完成的任务会在 Aria2 重启后消失, 除非启用了 <code>--force-save</code> 选项</li>
+			<li>因界面已汉化, 其他不再赘述.</li>
+		</ul>
+	</div>
+	<h2>YAAW 搭配脚本</h2>
+	<div class="content">
+		<b>迅雷离线</b>
+		<ul>
+			<li title="可以方便的把迅雷离线的下载地址导出到aria2/aria2-rpc/wget/IDM/Orbit，支持YAAW">Chrome Extension: <a href="https://chrome.google.com/webstore/detail/eehlmkfpnagoieibahhcghphdbjcdmen" target="_blank">ThunderLixianAssistant</a></li>
+			<li title="将迅雷离线地址导出成aria2/wget等下载命令，方便Linux/Mac用户使用">UserScript: <a href="https://github.com/binux/ThunderLixianExporter" target="_blank">ThunderLixianExporter</a></li>
+		</ul>
+		<b>旋风离线</b>
+		<ul>
+			<li title="QQ旋风网页版离线下载增强">UserScript: <a href="https://greasyfork.org/scripts/354-xuanfengex" target="_blank">XuanFengEx</a></li>
+			<li title="QQ旋风、迅雷离线、QQ旋风分享导出Aria2">UserScript: <a href="https://greasyfork.org/scripts/2398-lixianexporter" target="_blank">LixianExporter</a></li>
+		</ul>
+		<b>百度网盘</b>
+		<ul>
+			<li title="可以方便的把百度网盘的下载地址导出到aria2/aria2-rpc，支持YAAW">Chrome Extension: <a href="https://chrome.google.com/webstore/detail/mjaenbjdjmgolhoafkohbhhbaiedbkno" target="_blank">BaiduExporter</a></li>
+			<li title="可以方便的把百度网盘的下载地址导出到aria2/aria2-rpc，支持YAAW">Firefox Addons: <a href="https://github.com/acgotaku/BaiduExporter" target="_blank">BaiduExporter</a></li>
+			<li title="批量导出百度盘的下载链接">UserScript: <a href="https://greasyfork.org/scripts/294-baidupandownloadhelper" target="_blank">BaiduPanDownloadHelper</a></li>
+		</ul>
+		<b>其他脚本</b>
+		<ul>
+			<li title="用Aria2接管chrome的下载">Chrome Extension: <a href="https://chrome.google.com/webstore/detail/nimeojfecmndgolmlmjghjmbpdkhhogl" target="_blank">添加到aria2</a></li>
+		</ul>
+	</div>
+</body>
+</html>

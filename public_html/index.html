@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<!--
+  Copyright (C) 2012 Binux <17175297.hk@gmail.com>
+
+  This file is part of YAAW (https://github.com/binux/yaaw).
+
+  YAAW is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation, either version 3 of
+  the License, or (at your option) any later version.
+
+  YAAW is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You may get a copy of the GNU Lesser General Public License
+  from http://www.gnu.org/licenses/lgpl.txt
+
+  # latest commit c23ae2456ec95778651411e5b148b836307f6d8d
+  ignore commit 429ca8c1344b441cd24436d981dac2152b642fe2 #
+-->
+<html lang="zh-Hans" manifest="offline.appcache">
+  <head>
+    <meta charset="utf-8" />
+    <title>Aria2 Web 控制台</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, width=device-width">
+    <meta name="author" content="Binux" />
+    <meta name="chinesizing" content="aa65535" />
+    <link href="favicon.ico" rel="shortcut icon" type="image/ico" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="keywords" content="aria2,aria2c,aria2 rpc,aria2 web ui,aria2 web gui,aria2 web界面,yaaw汉化" />
+    <meta name="description" content="Yet Another Aria2 Web Frontend" />
+
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet" />
+    <link href="css/main.css" rel="stylesheet" />
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <header class="main-head page-header">
+        <h1>Aria2 Web 控制台</h1>
+        <span id="offline-cached"></span>
+        <div id="global-info" class="pull-right">
+          <div id="global-version"></div>
+          <div id="global-speed"></div>
+        </div>
+      </header>
+
+      <div class="clearfix hide" id="main-control">
+        <div id="main-alert" class="hide">
+          <div id="main-alert-inline" class="alert">
+            <a href="javascript:;" onclick="$('#main-alert').hide();" class="close">×</a>
+            <span class="alert-msg">加载中</span>
+          </div>
+        </div>
+
+        <div class="pull-left">
+          <div class="btn-group" id="select-btn">
+            <button id="select-all-btn" class="btn" title="全选">
+              <i class="select-box"></i>
+            </button>
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:;">
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a href="javascript:;" onclick="YAAW.tasks.selectActive();">选中下载中的任务</a></li>
+              <li><a href="javascript:;" onclick="YAAW.tasks.selectWaiting();">选中等待中的任务</a></li>
+              <li><a href="javascript:;" onclick="YAAW.tasks.selectPaused();">选中已暂停的任务</a></li>
+              <li><a href="javascript:;" onclick="YAAW.tasks.selectStoped();">选中已停止的任务</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="pull-left" id="not-selected-grp">
+          <div class="pull-left btn-group">
+            <a class="btn" id="add-task-btn" data-toggle="modal" href="#add-task-modal" title="添加任务">
+              <i class="icon-plus"></i> 添加
+            </a>
+          </div>
+          <div class="pull-left btn-group" id="do-all-btn">
+            <a href="javascript:;" onclick="ARIA2.unpause_all();" class="btn" id="unpause-all" title="开始所有任务">
+              <i class="icon-forward"></i>
+            </a>
+            <a href="javascript:;" onclick="ARIA2.pause_all();" class="btn" id="pause-all" title="暂停所有任务">
+              <i class="icon-stop"></i>
+            </a>
+            <a href="javascript:;" onclick="ARIA2.purge_download_result();" class="btn" id="pure-all" title="删除已经完成或出错的任务">
+              <i class="icon-trash"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="pull-left hide" id="selected-grp">
+          <div class="btn-group">
+            <a href="javascript:;" onclick="YAAW.tasks.unpause();YAAW.tasks.unSelectAll();" class="btn" title="开始">
+              <i class="icon-play"></i>
+            </a>
+            <a href="javascript:;" onclick="YAAW.tasks.pause();YAAW.tasks.unSelectAll();" class="btn" title="暂停">
+              <i class="icon-pause"></i>
+            </a>
+            <a href="javascript:;" onclick="YAAW.tasks.remove();YAAW.tasks.unSelectAll();" class="btn" title="删除">
+              <i class="icon-remove"></i>
+            </a>
+          </div>
+          <!--<button class="btn pull-left" id="info-btn" title="Task Info">-->
+            <!--<i class="icon-info-sign"></i> Info-->
+          <!--</button>-->
+        </div>
+
+        <div class="pull-right" id="other-grp">
+          <div class="btn-group">
+            <a href="javascript:;" class="btn" id="refresh-btn" title="刷新">
+              <i class="icon-refresh"></i> 刷新
+            </a>
+            <a class="btn" id="setting-btn" data-toggle="modal" href="#setting-modal" title="设置">
+              <i class="icon-wrench"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <section id="active-tasks">
+      <div class="section-header">
+        <i class="icon-chevron-down"></i><b>下载中的任务</b>
+      </div>
+      <ul class="tasks-table" id="active-tasks-table">
+        <li>
+          <div class="empty-tasks">
+            <strong>没有正在下载的任务</strong>
+          </div>
+        </li>
+      </ul>
+      </section>
+
+      <section id="other-tasks">
+      <div class="section-header">
+        <i class="icon-chevron-down"></i><b>其他任务</b>
+      </div>
+      <ul id="waiting-tasks-table" class="tasks-table">
+        <li>
+          <div class="empty-tasks">
+            <strong>没有任务</strong>
+          </div>
+        </li>
+      </ul>
+      <ul id="stoped-tasks-table" class="tasks-table"> </ul>
+      </section>
+    </div>
+
+    <ul id="task-contextmenu" class="dropdown-menu">
+      <li class="task-restart"><a href="javascript:;" onclick="YAAW.contextmenu.restart();">重新开始</a></li>
+      <li class="task-start"><a href="javascript:;" onclick="YAAW.contextmenu.unpause();">开始</a></li>
+      <li><a href="javascript:;" onclick="YAAW.contextmenu.pause();">暂停</a></li>
+      <li><a href="javascript:;" onclick="YAAW.contextmenu.remove();">删除</a></li>
+      <li class="task-move divider"></li>
+      <li class="task-move"><a href="javascript:;" onclick="YAAW.contextmenu.movetop();">移动到最上面</a></li>
+      <li class="task-move"><a href="javascript:;" onclick="YAAW.contextmenu.moveup();">上移</a></li>
+      <li class="task-move"><a href="javascript:;" onclick="YAAW.contextmenu.movedown();">下移</a></li>
+      <li class="task-move"><a href="javascript:;" onclick="YAAW.contextmenu.moveend();">移动到最下面</a></li>
+    </ul>
+
+    <section class="modal hide fade" id="add-task-modal">
+    <div class="modal-header">
+      <button class="close" data-dismiss="modal">×</button>
+      <h3>添加任务</h3>
+    </div>
+    <div class="modal-body">
+      <div id="add-task-alert" class="alert alert-error hide">
+        <a href="javascript:;" onclick="$('#add-task-alert').hide();" class="close">×</a>
+        <strong>错误:</strong> <span class="alert-msg"></span>
+      </div>
+      <form id="add-task-uri" onsubmit="YAAW.add_task.submit(this);return false;">
+        <div class="input-append">
+          <input type="text" name="uri" id="uri-input" class="input-clear" placeholder="输入HTTP, FTP 或 Magnet 链接" />
+          <span><a id="torrent-up-btn" class="btn">上传种子<input type="file" id="torrent-up-input" /></a></span>
+        </div>
+        <textarea id="uri-textarea" rows=5 class="input-clear hide" placeholder="输入HTTP, FTP 或 Magnet 链接"></textarea>
+      </form>
+      <div id="uri-more"><span class="or-and">&or;&or;&or;&or;&or;&or;</span><span class="or-and" style="display:none;">&and;&and;&and;&and;&and;&and;</span></div>
+      <div id="add-task-option-wrap"></div>
+    </div>
+    <div class="modal-footer">
+      <a href="javascript:;" onclick="$('#add-task-uri').submit();" id="add-task-submit" class="btn btn-primary">添加</a>
+      <a href="javascript:;" onclick="YAAW.add_task.clean();" class="btn" data-dismiss="modal">取消</a>
+    </div>
+    </section>
+
+    <section class="modal hide fade" id="setting-modal">
+    <div class="modal-header">
+      <button class="close" data-dismiss="modal">×</button>
+      <h2>设置</h2>
+    </div>
+    <div class="modal-body">
+      <form id="setting-form" class="form-horizontal" onsubmit="YAAW.setting.submit();return false;">
+        <fieldset>
+          <div class="control-group rpc-path-group">
+            <label class="control-label" for="rpc-path">JSON-RPC Path</label>
+            <div class="controls">
+              <div class="input-append btn-group rpc-path-wrap">
+                <input type="text" class="input-xlarge" id="rpc-path"><a class="add-on btn dropdown-toggle" href="javascript:;" disabled><b class="caret"></b></a>
+              </div>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label">自动刷新</label>
+            <div class="controls">
+              <label class="radio inline">
+                <input type="radio" name="refresh_interval" value="1000"> 1秒
+              </label>
+              <label class="radio inline">
+                <input type="radio" name="refresh_interval" value="3000" checked> 3秒
+              </label>
+              <label class="radio inline">
+                <input type="radio" name="refresh_interval" value="5000"> 5秒
+              </label>
+              <label class="radio inline">
+                <input type="radio" name="refresh_interval" value="10000"> 10秒
+              </label>
+              <label class="radio inline">
+                <input type="radio" name="refresh_interval" value="0"> 禁用
+              </label>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+      <div id="aria2-gsetting">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div id="copyright">
+        作者 <a href="https://github.com/binux/yaaw" target="_blank">Binux</a>
+        &nbsp;/&nbsp; 汉化 <a href="https://github.com/aa65535/Private-Mixed/tree/master/yaaw-zh-Hans" target="_blank">aa65535</a>
+        &nbsp;/&nbsp; <a href="usage.html" target="_blank">使用说明</a>
+      </div>
+      <a href="javascript:;" onclick="$('#setting-form').submit();" class="btn btn-success">保存</a>
+      <a href="javascript:;" class="btn" data-dismiss="modal">取消</a>
+    </div>
+    </section>
+
+    <script id="global-speed-tpl" type="text/mustache-template">
+      <i class="icon-download"></i> <span>{{#_v.format_size}}{{downloadSpeed}}{{/_v.format_size}}</span>/s
+        /
+      <i class="icon-upload"></i>  <span>{{#_v.format_size}}{{uploadSpeed}}{{/_v.format_size}}</span>/s
+    </script>
+
+    <script id="active-task-tpl" type="text/mustache-template">
+      {{#tasks}}
+      <li class="task" id="task-gid-{{gid}}" data-status="{{status}}" data-gid="{{gid}}">
+        <div class="left-area">
+          <div class="task-name">
+            <i class="select-box"></i>
+            <span title="{{title}}">{{title}}</span>
+          </div>
+          <div class="task-info">
+            <span class="task-status" title="{{#_v.status_text}}{{status}}{{/_v.status_text}}{{#_v.error_msg}}{{errorCode}}{{/_v.error_msg}}">
+              <i class="{{#_v.status_icon}}{{status}}{{/_v.status_icon}}"></i>
+            </span>
+            <span>{{#_v.format_size}}{{completedLength}}{{/_v.format_size}} / {{#_v.format_size}}{{totalLength}}{{/_v.format_size}}</span>
+            {{#uploadLength}}<span>(已上传 {{#_v.format_size}}{{uploadLength}}{{/_v.format_size}})</span>{{/uploadLength}}
+            {{#eta}}<span>剩余时间: {{#_v.format_time}}{{eta}}{{/_v.format_time}}</span>{{/eta}}
+          </div>
+        </div>
+        <div class="right-area">
+          <div class="progress">
+              <div class="bar" style="width:{{progress}}%;"> </div>
+              <div class="bar tex">{{progress}}%</div>
+          </div>
+          <div class="progress-info">
+            {{#downloadSpeed}}<span class="download-speed"><i class="icon-download"></i> {{#_v.format_size}}{{downloadSpeed}}{{/_v.format_size}}/s</span>{{/downloadSpeed}}
+            {{#uploadSpeed}}<span class="upload-speed"><i class="icon-upload"></i> {{#_v.format_size}}{{uploadSpeed}}{{/_v.format_size}}/s</span>{{/uploadSpeed}}
+            {{#connections}}<span class="seeders"><i class="icon-signal" title="连接数"></i> {{connections}}</span>{{/connections}}
+            {{#numSeeders}}<span class="seeders"><i class="icon-magnet" title="做种数"></i> {{numSeeders}}</span>{{/numSeeders}}
+          </div>
+        </div>
+      </li>
+      {{/tasks}}
+      {{^tasks}}
+      <li>
+        <div class="empty-tasks">
+          <strong>没有正在下载的任务</strong>
+        </div>
+      </li>
+      {{/tasks}}
+    </script>
+
+    <script id="other-task-tpl" type="text/mustache-template">
+      {{#tasks}}
+      <li class="task" id="task-gid-{{gid}}" data-status="{{status}}" data-gid="{{gid}}" data-infohash="{{infoHash}}">
+        <div class="left-area">
+          <div class="task-name">
+            <i class="select-box"></i>
+            <span title="{{title}}">{{title}}</span>
+          </div>
+        </div>
+        <div class="right-area">
+          <div class="task-info pull-left">
+            <span class="task-status" title="{{#_v.status_text}}{{status}}{{/_v.status_text}}{{#_v.error_msg}}{{errorCode}}{{/_v.error_msg}}"><i class="{{#_v.status_icon}}{{status}}{{/_v.status_icon}}"></i></span>
+            <span>{{#_v.format_size}}{{totalLength}}{{/_v.format_size}}</span>
+            {{#uploadLength}}<span>(up {{#_v.format_size}}{{uploadLength}}{{/_v.format_size}}){{/uploadLength}}
+          </div>
+          <div class="pull-right">
+            <div class="progress">
+              <div class="bar" style="width:{{progress}}%;"> </div>
+              <div class="bar tex">{{progress}}%</div>
+            </div>
+          </div>
+          <div class="clearfix"></div>
+        </div>
+      </li>
+      {{/tasks}}
+    </script>
+
+    <script id="info-box-tpl" type="text/mustache-template">
+      <div class="info-box" data-gid="{{gid}}">
+        <div class="tabbable tabs-left">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#ib-status" data-toggle="tab">状态</a></li>
+            <li><a href="#ib-files" data-toggle="tab">文件</a></li>
+            <li><a id="ib-options-a" href="#ib-options" data-toggle="tab">选项</a></li>
+            <li><a id="ib-peers-a" class="hide" style="display:none;" href="#ib-peers" data-toggle="tab">用户</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="ib-status"> </div>
+            <div class="tab-pane" id="ib-files"> </div>
+            <div class="tab-pane" id="ib-options"> </div>
+            <div class="tab-pane" id="ib-peers"> </div>
+          </div>
+        </div>
+      </div>
+    </script>
+
+    <script id="ib-status-tpl" type="text/mustache-template">
+      <ul>
+        <li><strong>任务大小: </strong>{{#_v.format_size}}{{totalLength}}{{/_v.format_size}} ({{#_v.format_size}}{{pieceLength}}{{/_v.format_size}} × {{numPieces}})</li>
+        <li><strong>任务状态: </strong>{{#_v.status_text}}{{status}}{{/_v.status_text}}{{#_v.error_msg}}{{errorCode}}{{/_v.error_msg}}</li>
+        <li><strong>保存路径: </strong>{{dir}}</li>
+        {{#bittorrent}}
+          {{#creationDate}}<li><strong>发布时间: </strong>{{#_v.format_date}}{{creationDate}}{{/_v.format_date}}</li>{{/creationDate}}
+          {{#comment}}<li><strong>种子注释: </strong>{{comment}}</li>{{/comment}}
+        {{/bittorrent}}
+        <li class="bitfield"><strong>文件区块: </strong>{{#_v.bitfield}}{{bitfield}}{{/_v.bitfield}}</li>
+      </ul>
+    </script>
+
+    <script id="ib-files-tpl" type="text/mustache-template">
+      <div id="ib-file-btn">
+        <button id="ib-file-save" class="btn btn-primary">保存</button>
+        <button id="ib-file-select" class="btn">全选</button>
+        <button id="ib-file-unselect" class="btn">全不选</button>
+      </div>
+      <ul>
+        {{#files}}
+        <li>
+          <i class="select-box{{#selected}} icon-ok{{/selected}}" data-index="{{index}}"></i>
+          <span class="ib-file-title">{{title}}</span>
+          <span class="ib-file-size"> {{#_v.format_size}}{{completedLength}}{{/_v.format_size}} / {{#_v.format_size}}{{length}}{{/_v.format_size}}</span>
+        </li>
+        {{/files}}
+      </ul>
+    </script>
+
+    <script id="ib-options-tpl" type="text/mustache-template">
+      <form id="ib-options-form" class="form-horizontal" onsubmit="false">
+      <ul>
+        <li><span>下载限速:</span><input name="max-download-limit" class="active-allowed" value="{{max-download-limit}}" /></li>
+        <li><span>上传限速:</span><input name="max-upload-limit" class="active-allowed" value="{{max-upload-limit}}" /></li>
+        <li><span>分块数量:</span><input name="split" value="{{split}}" /></li>
+        <li><span>分块大小:</span><input name="min-split-size" value="{{min-split-size}}" /></li>
+        <li><span>最大连接数:</span><input name="max-connection-per-server" value="{{max-connection-per-server}}" /></li>
+        <li id="ib-options-btn"><div><button id="ib-options-save" class="btn btn-primary">保存</button></div></li>
+      </form>
+    </script>
+
+    <script id="ib-peers-tpl" type="text/mustache-template">
+      {{#.}}
+      <li>
+        <span class="ip_port">{{ip}}:{{port}} - <span class="peerid">{{#_v.format_peerid}}{{peerId}}{{/_v.format_peerid}}</span></span>
+        <b style="width:2.5em;display:inline-block;">{{#_v.bitfield_to_percent}}{{bitfield}}{{/_v.bitfield_to_percent}}%</b>
+        <i class="icon-download"></i><span style="width:6em;display:inline-block;">{{#_v.format_size}}{{downloadSpeed}}{{/_v.format_size}}/s</span>
+        <i class="icon-upload"></i><span style="width:6em;display:inline-block;">{{#_v.format_size}}{{uploadSpeed}}{{/_v.format_size}}/s</span>
+      </li>
+      {{/.}}
+    </script>
+
+    <script id="other-task-empty" type="text/mustache-template">
+      <li>
+        <div class="empty-tasks">
+          <strong>没有任务</strong>
+        </div>
+      </li>
+    </script>
+
+    <script id="add-task-option-tpl" type="text/mustache-template">
+      <hr />
+      <form id="add-task-option" class="form-horizontal" onsubmit="$('#add-task-uri').submit();return false">
+        <input type="submit" style="position:fixed;top:0;visibility:hidden"/>
+        <div class="control-group">
+          <label class="control-label" for="ati-out">文件名</label>
+          <div class="controls">
+            <input id="ati-out" class="input-xlarge input-clear" name="out" />
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="ati-dir">保存位置</label>
+          <div class="controls">
+            <input id="ati-dir" class="input-xlarge" name="dir" />
+          </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="control-group half">
+          <div class="controls">
+            <label class="checkbox">
+              <input type="checkbox" name="pause" class="input-save" {{#pause}}checked{{/pause}} />
+              添加后暂停任务
+            </label>
+          </div>
+        </div>
+<!--
+        <div class="control-group half">
+          <div class="controls">
+            <label class="checkbox" title="有规则的下载链接">
+              <input type="checkbox" name="parameterized-uri" class="input-save" {{#parameterized-uri}}checked{{/parameterized-uri}} />
+              参数化链接支持
+            </label>
+          </div>
+        </div>
+-->
+        <div class="clearfix"></div>
+        <div class="control-group half">
+          <label class="control-label" for="ati-split">分块数量</label>
+          <div class="controls">
+            <input id="ati-split" class="input-small input-save" name="split" value="{{split}}" />
+          </div>
+        </div>
+        <div class="control-group half">
+          <label class="control-label" for="ati-cps" title="同一服务器最大连接数">最大连接数</label>
+          <div class="controls">
+            <input id="ati-cps" class="input-small input-save" name="max-connection-per-server" value="{{max-connection-per-server}}" />
+          </div>
+        </div>
+        <div class="control-group half">
+          <label class="control-label" for="ati-sr">种子分享率</label>
+          <div class="controls">
+            <input id="ati-sr" class="input-small input-save" name="seed-ratio" value="{{seed-ratio}}" />
+          </div>
+        </div>
+        <div class="control-group half">
+          <label class="control-label" for="ati-st">做种时间</label>
+          <div class="controls">
+            <input id="ati-st" class="input-small input-save" name="seed-time" value="{{seed-time}}" />
+          </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="control-group">
+          <label class="control-label" for="ati-header">请求头</label>
+          <div class="controls">
+            <textarea id="ati-header" class="input-xlarge input-save" name="header" warp="off" placeholder="HTTP请求头, 作为验证需要, 一般不需要填写">{{header}}</textarea>
+          </div>
+        </div>
+      </form>
+    </script>
+
+    <script id="aria2-global-setting-tpl" type="text/mustache-template">
+      <hr />
+      <form id="aria2-gs-form" class="form-horizontal" onsubmit="false">
+        <div class="control-group half">
+          <label class="control-label" for="gsi-dl">全局下载限速</label>
+          <div class="controls">
+            <input id="gsi-dl" name="max-overall-download-limit" class="input-small" value="{{max-overall-download-limit}}" />
+          </div>
+        </div>
+        <div class="control-group half">
+          <label class="control-label" for="gsi-ul">全局上传限速</label>
+          <div class="controls">
+            <input id="gsi-ul" name="max-overall-upload-limit" class="input-small" value="{{max-overall-upload-limit}}" />
+          </div>
+        </div>
+        <div class="control-group half">
+          <label class="control-label" for="gsi-cd">最多同时任务数</label>
+          <div class="controls">
+            <input id="gsi-cd" name="max-concurrent-downloads" class="input-small" value="{{max-concurrent-downloads}}" />
+          </div>
+        </div>
+        <div class="control-group half">
+          <label class="control-label" for="gsi-mss">最小分块大小</label>
+          <div class="controls">
+            <input id="gsi-mss" name="min-split-size" class="input-small" value="{{#_v.format_size_0}}{{min-split-size}}{{/_v.format_size_0}}" />
+          </div>
+        </div>
+        <div class="clearfix"></div>
+
+        <div class="control-group">
+          <label class="control-label" for="gsi-ua">客户端伪装</label>
+          <div class="controls">
+            <input id="gsi-ua" name="user-agent" class="input-xlarge" value="{{user-agent}}" />
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="gsi-dir">默认下载目录</label>
+          <div class="controls">
+            <input id="gsi-dir" name="dir" class="input-xlarge" value="{{dir}}" disabled />
+          </div>
+        </div>
+      </form>
+    </script>
+
+    <script src="js/jquery-1.7.2.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.jsonrpc.min.js"></script>
+    <script src="js/jquery.Storage.min.js"></script>
+    <script src="js/jquery.base64.min.js"></script>
+    <script src="js/mustache.min.js"></script>
+    <script src="js/peerid.min.js"></script>
+    <script src="js/aria2.js"></script>
+    <script src="js/yaaw.js"></script>
+  </body>
+</html>
+<!-- vim: set et sw=2 ts=2 sts=2 ff=unix fenc=utf8: -->
