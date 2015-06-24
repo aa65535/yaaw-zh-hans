@@ -454,7 +454,7 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 							if (finished_tasks_list.indexOf(e.gid) != -1)
 								return;
 							if (ARIA2.finish_notification) {
-								YAAW.notification("Aria2 Task Finished", e.title);
+								YAAW.notification("Aria2 Web 控制台通知", e.title + " 已完成");
 							}
 							finished_tasks_list.push(e.gid);
 						});
