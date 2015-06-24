@@ -1,10 +1,8 @@
 YAAW-zh-Hans
 ----
 
-经过汉化的 [YAAW](https://github.com/binux/yaaw)
+汉化过的 [YAAW](https://github.com/binux/yaaw) 并修复了一些小BUG
 
 访问地址 [aria2c.com](http://aria2c.com/)
 
-latest commit c23ae2456ec95778651411e5b148b836307f6d8d
-
-ignore commit 429ca8c1344b441cd24436d981dac2152b642fe2
+latest commit a5d2d30d577d4d42c746dadb4ce9a3fafa838076

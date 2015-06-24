@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Binux <17175297.hk@gmail.com>
+ * Copyright (C) 2015 Binux <roy@binux.me>
  *
  * This file is part of YAAW (https://github.com/binux/yaaw).
  *
@@ -42,12 +42,89 @@ var YAAW = (function() {
 				}
 				ARIA2.refresh();
 				ARIA2.auto_refresh(YAAW.setting.refresh_interval);
+				ARIA2.finish_notification = YAAW.setting.finish_notification;
 				ARIA2.get_version();
 				ARIA2.global_stat();
 			});
 		},
 
 		event_init: function() {
+			$("#add-task-submit").live("click", function() {
+				YAAW.add_task.submit();return false;
+			});
+			$("#add-task-uri").submit(function() {
+				YAAW.add_task.submit();return false;
+			});
+			$("#saveSettings").live("click", function() {
+				YAAW.setting.submit();return false;
+			});
+			$("#setting-form").submit(function() {
+				YAAW.setting.submit();return false;
+			});
+			$("#add-task-clear").live("click", function() {
+				YAAW.add_task.clean();
+			});
+			$("#btnRemove").live("click", function() {
+				YAAW.tasks.remove();YAAW.tasks.unSelectAll();
+			});
+			$("#btnPause").live("click", function() {
+				YAAW.tasks.pause();YAAW.tasks.unSelectAll();
+			});
+			$("#btnUnPause").live("click", function() {
+				YAAW.tasks.unpause();YAAW.tasks.unSelectAll();
+			});
+			$("#btnClearAlert").live("click", function() {
+				$('#main-alert').hide();
+			});
+			$("#btnSeleceActive").live("click", function() {
+				YAAW.tasks.selectActive();
+			});
+			$("#btnSelectWaiting").live("click", function() {
+				YAAW.tasks.selectWaiting();
+			});
+			$("#btnSelectPaused").live("click", function() {
+				YAAW.tasks.selectPaused();
+			});
+			$("#btnSelectStoped").live("click", function() {
+				YAAW.tasks.selectStoped();
+			});
+			$("#btnStartAll").live("click", function() {
+				ARIA2.unpause_all();
+			});
+			$("#btnPauseAll").live("click", function() {
+				ARIA2.pause_all();
+			});
+			$("#btnRemoveFinished").live("click", function() {
+				ARIA2.purge_download_result();
+			});
+			$("#closeAlert").live("click", function() {
+				$('#add-task-alert').hide();
+			});
+			$("#menuMoveTop").live("click", function() {
+				YAAW.contextmenu.movetop();
+			});
+			$("#menuMoveUp").live("click", function() {
+				YAAW.contextmenu.moveup();
+			});
+			$("#menuMoveDown").live("click", function() {
+				YAAW.contextmenu.movedown();
+			});
+			$("#menuMoveEnd").live("click", function() {
+				YAAW.contextmenu.moveEnd();
+			});
+			$("#menuRestart").live("click", function() {
+				YAAW.contextmenu.restart();
+			});
+			$("#menuStart").live("click", function() {
+				YAAW.contextmenu.unpause();
+			});
+			$("#menuPause").live("click", function() {
+				YAAW.contextmenu.pause();
+			});
+			$("#menuRemove").live("click", function() {
+				YAAW.contextmenu.remove();
+			});
+
 			$("[rel=tooltip]").tooltip({"placement": "bottom"});
 
 			$(".task .select-box").live("click", function() {
@@ -74,13 +151,17 @@ var YAAW = (function() {
 				$("#ati-out").parents(".control-group").val("").toggle();
 			});
 
-			$("#ib-files li").live("click", function() {
-				$(this).find(".select-box").toggleClass("icon-ok");
+			$("#ib-files .ib-file-title, #ib-files .select-box").live("click", function() {
+				if ($(this).parent().find(".select-box:first").hasClass("icon-ok")) {
+					$(this).parent().find(".select-box").removeClass("icon-ok");
+				} else {
+					$(this).parent().find(".select-box").addClass("icon-ok");
+				}
 			});
 
 			$("#ib-file-save").live("click", function() {
 				var indexes = [];
-				$("#ib-files .select-box.icon-ok").each(function(i, n) {
+				$("#ib-files .select-box.icon-ok[data-index]").each(function(i, n) {
 					indexes.push(n.getAttribute("data-index"));
 				});
 				if (indexes.length == 0) {
@@ -91,14 +172,6 @@ var YAAW = (function() {
 					};
 					ARIA2.change_option($(this).parents(".info-box").attr("data-gid"), options);
 				};
-			});
-
-			$("#ib-file-select").live("click", function() {
-				$("#ib-files .select-box").addClass("icon-ok");
-			});
-
-			$("#ib-file-unselect").live("click", function() {
-				$("#ib-files .select-box").removeClass("icon-ok");
 			});
 
 			$("#ib-options-a").live("click", function() {
@@ -195,6 +268,49 @@ var YAAW = (function() {
 						};
 					}();
 				});
+			},
+
+			files_tree: function(files) {
+				var file_dict = {}, f;
+				for (var i = 0; i < files.length; i++) {
+					var at = files[i].title.split('/');
+					f = file_dict;
+					for (var j = 0; j < at.length; j++) {
+						f[at[j]] = f[at[j]] || {};
+						f = f[at[j]];
+					}
+					f['_file'] = files[i];
+				}
+
+				function render(f) {
+					var content = '<ul>';
+
+					for (var k in f) {
+						if (f[k]['_file'] !== undefined) {
+							continue;
+						}
+
+						content += '<li>';
+						content += '<i class="select-box icon-ok"></i>';
+						content += '<span class="ib-file-title">'+$('<div>').text(k).html()+'</span>';
+						content += render(f[k]);
+						content += '</li>';
+					}
+
+					for (k in f) {
+						if (f[k]['_file'] === undefined) {
+							continue;
+						}
+
+						f[k]['_file']['relative_title'] = k;
+						content += YAAW.tpl.file(f[k]['_file']);
+					}
+					content += '</ul>';
+					return content;
+				}
+				
+				//console.log(file_dict);
+				return render(file_dict);
 			},
 
 			view: {
@@ -644,16 +760,22 @@ var YAAW = (function() {
 					on_gid = ""+this.getAttribute("data-gid");
 
 					var status = this.getAttribute("data-status");
-					if (status == "waiting" || status == "paused")
+					if (status == "waiting" || status == "paused") {
 						$("#task-contextmenu .task-move").show();
-					else
+					} else {
 						$("#task-contextmenu .task-move").hide();
-					if (status == "removed" || status == "completed" || status == "error") {
+					}
+					if (status == "removed" || status == "complete" || status == "error") {
 						$(".task-restart").show();
 						$(".task-start").hide();
 					} else {
 						$(".task-restart").hide();
 						$(".task-start").show();
+					}
+					if (status != "waiting" || status != "active") {
+						$(".task-pause").hide();
+					} else {
+						$(".task-pause").show();
 					}
 					return false;
 				}).live("mouseout", function(ev) {
@@ -699,7 +821,14 @@ var YAAW = (function() {
 			},
 
 			remove: function() {
-				if (on_gid) ARIA2.remove(on_gid);
+				var remove_list = ["active", "waiting", "paused"];
+				if (on_gid) {
+					if (remove_list.indexOf(status) !== -1) {
+						ARIA2.remove(on_gid);
+					} else {
+						ARIA2.remove_result(on_gid);
+					}
+				}
 				on_gid = null;
 			},
 
@@ -729,6 +858,7 @@ var YAAW = (function() {
 			init: function() {
 				this.jsonrpc_path = $.Storage.get("jsonrpc_path") || "http://localhost:6800/jsonrpc";
 				this.refresh_interval = Number($.Storage.get("refresh_interval") || 3000);
+				this.finish_notification = Number($.Storage.get("finish_notification") || 1);
 				this.add_task_option = $.Storage.get("add_task_option");
 				this.jsonrpc_history = JSON.parse($.Storage.get("jsonrpc_history") || "[]");
 				if (this.add_task_option) {
@@ -768,11 +898,13 @@ var YAAW = (function() {
 					$.Storage.set("jsonrpc_history", JSON.stringify(this.jsonrpc_history));
 				}
 				$.Storage.set("refresh_interval", String(this.refresh_interval));
+				$.Storage.set("finish_notification", String(this.finish_notification));
 			},
 
 			update: function() {
 				$("#setting-form #rpc-path").val(this.jsonrpc_path);
 				$("#setting-form input:radio[name=refresh_interval][value="+this.refresh_interval+"]").attr("checked", true);
+				$("#setting-form input:radio[name=finish_notification][value="+this.finish_notification+"]").attr("checked", true);
 				if (this.jsonrpc_history.length) {
 					var content = '<ul class="dropdown-menu">';
 					$.each(this.jsonrpc_history, function(n, e) {
@@ -790,18 +922,24 @@ var YAAW = (function() {
 				_this = $("#setting-form");
 				var _jsonrpc_path = _this.find("#rpc-path").val();
 				var _refresh_interval = Number(_this.find("input:radio[name=refresh_interval]:checked").val());
+				var _finish_notification = Number(_this.find("input:radio[name=finish_notification]:checked").val());
 
 				var changed = false;
-				if (_jsonrpc_path != undefined && this.jsonrpc_path != _jsonrpc_path) {
+				if (_jsonrpc_path !== undefined && this.jsonrpc_path != _jsonrpc_path) {
 					this.jsonrpc_path = _jsonrpc_path;
 					YAAW.tasks.unSelectAll();
 					$("#main-alert").hide();
 					YAAW.aria2_init();
 					changed = true;
 				}
-				if (_refresh_interval != undefined && this.refresh_interval != _refresh_interval) {
+				if (_refresh_interval !== undefined && this.refresh_interval != _refresh_interval) {
 					this.refresh_interval = _refresh_interval;
 					ARIA2.auto_refresh(this.refresh_interval);
+					changed = true;
+				}
+				if (_finish_notification !== undefined && this.finish_notification != _finish_notification) {
+					this.finish_notification = _finish_notification;
+					ARIA2.finish_notification = _finish_notification;
 					changed = true;
 				}
 				if (changed) {
@@ -819,6 +957,21 @@ var YAAW = (function() {
 				ARIA2.change_global_option(options);
 				$("#setting-modal").modal('hide');
 			},
+		},
+
+		notification: function(title, content) {
+			if (!Notification) {
+				return false;
+			}
+
+			if (Notification.permission !== "granted")
+				Notification.requestPermission();
+
+			var notification = new Notification(title, {
+				body: content,
+			});
+
+			return notification;
 		},
 	}
 })();
