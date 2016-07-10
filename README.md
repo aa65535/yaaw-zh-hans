@@ -5,4 +5,4 @@ YAAW-zh-Hans
 
 访问地址 [aria2c.com](http://aria2c.com/)
 
-latest commit a5d2d30d577d4d42c746dadb4ce9a3fafa838076
+latest commit 3a3ff668a9b304dffde9fce5b1c7665d40674291
