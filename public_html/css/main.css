@@ -161,6 +161,7 @@
     white-space: nowrap;
 }
 .task .task-name span {
+    word-break: break-all;
     margin-left: 3px;
     font-size: 14px;
     font-weight: bold;
@@ -204,7 +205,7 @@
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 550px) {
     .modal.fade.in {
         top: 60px;
     }
@@ -251,7 +252,9 @@
         position: relative;
         width: auto;
     }
-
+    #other-tasks .left-area {
+        margin-right: 0;
+    }
     #other-tasks .right-area {
         position: relative;
         padding-top: 0;
@@ -268,7 +271,7 @@
         margin-left: 110px;
     }
 }
-@media (min-width: 480px) and (max-width: 980px) {
+@media (min-width: 551px) and (max-width: 980px) {
     #active-tasks .left-area {
         margin-right: 186px;
     }
@@ -346,6 +349,7 @@
     padding-bottom: 6px;
     vertical-align: top;
     border-bottom: 1px solid #FFF;
+    white-space: nowrap;
 }
 #ib-files .ib-file-title:hover {
     border-bottom: 1px solid #666;
@@ -368,6 +372,7 @@
 #ib-options li {
     display: block;
     padding-bottom: 6px;
+    white-space: nowrap;
 }
 #ib-options li span {
     display: block;
