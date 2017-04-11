@@ -189,7 +189,7 @@
 .task .download-speed,
 .task .upload-speed,
 .task .seeders {
-    margin-right: 8px;
+    margin-right: 5px;
 }
 
 #other-tasks .task-info {
@@ -294,10 +294,10 @@
 }
 @media (min-width: 980px) {
     #active-tasks .left-area {
-        margin-right: 286px;
+        margin-right: 296px;
     }
     #active-tasks .right-area {
-        width: 270px;
+        width: 280px;
     }
 
     #other-tasks .left-area {
