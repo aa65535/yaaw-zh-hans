@@ -739,6 +739,7 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 						var file = result.files[i];
 						file.title = file.path.replace(new RegExp("^"+result.dir.replace(/\\/g, "[\\/]")+"/?"), "");
 						file.selected = file.selected == "true" ? true : false;
+						file.progress = (file.completedLength * 1.0 / file.length * 100).toFixed(2);
 					};
 					$("#ib-status").empty().append(YAAW.tpl.ib_status(result));
 					$("#ib-files .file-list").empty().append(YAAW.tpl.files_tree(result.files));

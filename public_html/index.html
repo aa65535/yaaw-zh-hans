@@ -178,9 +178,9 @@
           <input type="text" name="uri" id="uri-input" class="input-clear" placeholder="输入HTTP, FTP 或 Magnet 链接" />
           <span><a id="torrent-up-btn" class="btn">上传种子<input type="file" id="torrent-up-input" /></a></span>
         </div>
-        <textarea id="uri-textarea" rows=5 class="input-clear hide" placeholder="输入HTTP, FTP 或 Magnet 链接"></textarea>
+        <textarea id="uri-textarea" rows=5 class="input-clear hide" placeholder="输入HTTP, FTP 或 Magnet 链接, 每行一个"></textarea>
       </form>
-      <div id="uri-more"><span class="or-and">&or;&or;&or;&or;&or;&or;</span><span class="or-and" style="display:none;">&and;&and;&and;&and;&and;&and;</span></div>
+      <div id="uri-more"><span class="or-and">&or;&or;&or;多个链接&or;&or;&or;</span><span class="or-and" style="display:none;">&and;&and;&and;单个链接&and;&and;&and;</span></div>
       <div id="add-task-option-wrap"></div>
     </div>
     <div class="modal-footer">
@@ -366,7 +366,7 @@
         <li>
           <i class="select-box{{#selected}} icon-ok{{/selected}}" data-index="{{index}}"></i>
           <span class="ib-file-title">{{relative_title}}</span>
-          <span class="ib-file-size"> {{#_v.format_size}}{{completedLength}}{{/_v.format_size}} / {{#_v.format_size}}{{length}}{{/_v.format_size}}</span>
+          <span class="ib-file-size"> {{#_v.format_size}}{{completedLength}}{{/_v.format_size}} / {{#_v.format_size}}{{length}}{{/_v.format_size}} ({{progress}}%)</span>
         </li>
     </script>
 
