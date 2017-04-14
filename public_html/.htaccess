@@ -1,6 +1,0 @@
-AddDefaultCharset utf-8
-FileETag none
-<IfModule mod_expires.c>
-	ExpiresActive  On
-	ExpiresDefault A60
-</IfModule>
