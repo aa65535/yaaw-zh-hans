@@ -613,7 +613,10 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 			ARIA2.request("getPeers", [gid],
 				function(result) {
 					// console.debug(result);
-					$("#ib-peers").empty().append(YAAW.tpl.ib_peers(result.result));
+					$('<tbody>').appendTo($('<table>').appendTo($("#ib-peers").empty()))
+					.append('<tr><th>位置</th><th>客户端</th><th>完成率</th><th>下载速度</th><th>上传速度</th></tr>')
+					.append(YAAW.tpl.ib_peers(result.result));
+					//$("#ib-peers").empty().append(YAAW.tpl.ib_peers(result.result));
 				}
 			);
 		},
