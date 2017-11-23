@@ -348,6 +348,8 @@
 
 		<script id="ib-status-tpl" type="text/mustache-template">
 			<ul>
+				{{#uris}}<li><strong>下载链接: </strong><a target=_blank href="{{.}}">{{.}}</a>{{/uris}}
+				{{#infoHash}}<li><strong>磁力链接: </strong><a target=_blank href="magnet:?xt=urn:btih:{{infoHash}}">magnet:?xt=urn:btih:{{infoHash}}</a></li>{{/infoHash}}
 				<li><strong>任务大小: </strong>{{#_v.format_size}}{{totalLength}}{{/_v.format_size}} ({{#_v.format_size}}{{pieceLength}}{{/_v.format_size}} × {{numPieces}})</li>
 				<li><strong>任务状态: </strong>{{#_v.status_text}}{{status}}{{/_v.status_text}}{{#_v.error_msg}}{{errorCode}}{{/_v.error_msg}}</li>
 				<li><strong>保存路径: </strong>{{dir}}</li>

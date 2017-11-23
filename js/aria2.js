@@ -738,11 +738,20 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 					}
 
 					result = result.result;
-					for (var i=0; i<result.files.length; i++) {
+					result.uris = [];
+					for (var i = 0; i < result.files.length; i++) {
 						var file = result.files[i];
 						file.title = file.path.replace(new RegExp("^"+result.dir.replace(/\\/g, "[\\/]")+"/?"), "");
 						file.selected = file.selected == "true" ? true : false;
 						file.progress = (file.completedLength * 1.0 / file.length * 100).toFixed(2);
+						if (file.uris && file.uris.length) {
+							for (var j = 0; j < file.uris.length; j++) {
+								var uri = file.uris[j].uri;
+								if (result.uris.indexOf(uri) == -1) {
+									result.uris.push(uri);
+								}
+							}
+						}
 					};
 					$("#ib-status").empty().append(YAAW.tpl.ib_status(result));
 					$("#ib-files .file-list").empty().append(YAAW.tpl.files_tree(result.files));
