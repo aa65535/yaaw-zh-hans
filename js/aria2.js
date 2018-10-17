@@ -244,7 +244,7 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 			if (!$.isArray(uri)) uri = [uri];
 			if (!options) options = {};
 			if (uri.match(/^[0-9a-fA-F]{40}$/)) {
-				// console.debug('(add_task)Info Hash:' + url);
+				// console.debug('(add_task)Info Hash:' + uri);
 				uri = 'magnet:?xt=urn:btih:' + uri;
 			}
 			ARIA2.request("addUri", [uri, options],
