@@ -362,22 +362,23 @@
 		</script>
 
 		<script id="file-tpl" type="text/mustache-template">
-				<li>
-					<i class="select-box{{#selected}} icon-ok{{/selected}}" data-index="{{index}}"></i>
-					<span class="ib-file-title">{{relative_title}}</span>
-					<span class="ib-file-size"> {{#_v.format_size}}{{completedLength}}{{/_v.format_size}} / {{#_v.format_size}}{{length}}{{/_v.format_size}} ({{progress}}%)</span>
-				</li>
+			<li>
+				<i class="select-box{{#selected}} icon-ok{{/selected}}" data-index="{{index}}"></i>
+				<span class="ib-file-title">{{relative_title}}</span>
+				<span class="ib-file-size"> {{#_v.format_size}}{{completedLength}}{{/_v.format_size}} / {{#_v.format_size}}{{length}}{{/_v.format_size}} ({{progress}}%)</span>
+			</li>
 		</script>
 
 		<script id="ib-options-tpl" type="text/mustache-template">
 			<form id="ib-options-form" class="form-horizontal" onsubmit="false">
-			<ul>
-				<li><span>下载限速:</span><input name="max-download-limit" class="active-allowed" value="{{max-download-limit}}" /></li>
-				<li><span>上传限速:</span><input name="max-upload-limit" class="active-allowed" value="{{max-upload-limit}}" /></li>
-				<li><span>分块数量:</span><input name="split" value="{{split}}" /></li>
-				<li><span>分块大小:</span><input name="min-split-size" value="{{min-split-size}}" /></li>
-				<li><span>最大连接数:</span><input name="max-connection-per-server" value="{{max-connection-per-server}}" /></li>
-				<li id="ib-options-btn"><div><button id="ib-options-save" class="btn btn-primary">保存</button></div></li>
+				<ul>
+					<li><span>下载限速:</span><input name="max-download-limit" class="active-allowed" value="{{max-download-limit}}" /></li>
+					<li><span>上传限速:</span><input name="max-upload-limit" class="active-allowed" value="{{max-upload-limit}}" /></li>
+					<li><span>分块数量:</span><input name="split" value="{{split}}" /></li>
+					<li><span>分块大小:</span><input name="min-split-size" value="{{min-split-size}}" /></li>
+					<li><span>最大连接数:</span><input name="max-connection-per-server" value="{{max-connection-per-server}}" /></li>
+					<li id="ib-options-btn"><div><button id="ib-options-save" class="btn btn-primary">保存</button></div></li>
+				</ul>
 			</form>
 		</script>
 
