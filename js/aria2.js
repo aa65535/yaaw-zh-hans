@@ -241,13 +241,12 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 
 		add_task: function(uri, options) {
 			if (!uri) return false;
-			if (!$.isArray(uri)) uri = [uri];
 			if (!options) options = {};
-			if (uri.match(/^[0-9a-fA-F]{40}$/)) {
+			if (/^[0-9a-z]{40}$/i.test(uri)) {
 				// console.debug('(add_task)Info Hash:' + uri);
 				uri = 'magnet:?xt=urn:btih:' + uri;
 			}
-			ARIA2.request("addUri", [uri, options],
+			ARIA2.request("addUri", [[uri], options],
 				function(result) {
 					// console.debug(result);
 					ARIA2.refresh();
@@ -269,10 +268,11 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 			if (!$.isArray(uris)) uris = [uris];
 			var params = [];
 			for (var i=0; i<uris.length; i++) {
-				if (uris[i].match(/^[0-9a-fA-F]{40}$/)) {
+				uris[i] = $.trim(uris[i]);
+				if (!uris[i]) continue;
+				if (/^[0-9a-z]{40}$/i.test(uris[i])) {
 					// console.debug('(madd_task)Info Hash:' + uris[i]);
-					params.push([['magnet:?xt=urn:btih:' + uris[i]], options]);
-					continue;
+					uris[i] = 'magnet:?xt=urn:btih:' + uris[i];
 				}
 				params.push([[uris[i]], options]);
 			};
