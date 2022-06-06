@@ -20,6 +20,8 @@
 
 .select-box {
     cursor: pointer;
+    user-select: none;
+    -moz-user-select: none;
 }
 .btn-inline {
     /* fix for MAC/chrome */
@@ -400,6 +402,10 @@
 #task-contextmenu {
     position: fixed;
     z-index: 99;
+}
+#task-contextmenu li > a {
+    user-select: none;
+    -moz-user-select: none;
 }
 
 /* add task modal */

@@ -66,7 +66,7 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 		var title = "Unknown";
 		if (result.bittorrent && result.bittorrent.info && result.bittorrent.info.name)
 			title = result.bittorrent.info.name;
-		else if (result.files[0].path.replace(
+		else if (result.files[0].path && result.files[0].path.replace(
 			new RegExp("^"+dir.replace(/\\/g, "/").replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')+"/?"), "").split("/").length) {
 			title = result.files[0].path.replace(new RegExp("^"+dir.replace(/\\/g, "/").replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')+"/?"), "").split("/");
 			if (result.bittorrent)
@@ -341,6 +341,8 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 		},
 
 		restart_task: function(gids) {
+			if (!$.isArray(gids))
+				gids = [gids];
 			$.each(gids, function(n, gid) {
 				var result = $("#task-gid-"+gid).data("raw");
 				var uris = [];
@@ -348,6 +350,14 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 					if (e.uris.length)
 						uris.push(e.uris[0].uri);
 				});
+				if (result.bittorrent) {
+					var magnet_link = "magnet:?xt=urn:btih:" + result.infoHash;
+					if (result.bittorrent.info.name)
+						magnet_link += "&dn=" + result.bittorrent.info.name;
+					if (result.bittorrent.announceList.length)
+						magnet_link += "&tr=" + result.bittorrent.announceList.join("&tr=");
+					uris.push(magnet_link);
+				}
 				if (uris.length > 0) {
 					ARIA2.request("getOption", [gid], function(result) {
 						var options = result.result;
@@ -493,6 +503,12 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 				else
 					result.progress = (result.completedLength * 1.0 / result.totalLength * 100).toFixed(2);
 
+				result.progressStatus = {
+					"active": "progress-striped",
+					"complete": "progress-success",
+					"removed": "progress-warning",
+					"error": "progress-danger"
+				}[result.status];
 				result.eta = (result.totalLength - result.completedLength)/result.downloadSpeed;
 				result.downloadSpeed = parseInt(result.downloadSpeed);
 				result.uploadSpeed = parseInt(result.uploadSpeed);
@@ -508,6 +524,19 @@ if (typeof ARIA2 == "undefined" || !ARIA2) var ARIA2 = (function() {
 			ARIA2.request("changePosition", [gid, pos, how],
 				function(result) {
 					// console.debug(result);
+					main_alert("alert-info", "移动成功", 1000);
+					ARIA2.refresh();
+				}
+			);
+		},
+
+		change_selected_pos: function(gids, pos, how) {
+			var params = [];
+			$.each(gids, function (i, n) {
+				params.push([n, pos, how]);
+			});
+			ARIA2.batch_request("changePosition", params,
+				function (result) {
 					main_alert("alert-info", "移动成功", 1000);
 					ARIA2.refresh();
 				}

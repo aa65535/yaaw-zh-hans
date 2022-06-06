@@ -20,6 +20,8 @@
 
 var YAAW = (function() {
 	var selected_tasks = false;
+	var selected_range_start = null;
+	var selected_range_close = null;
 	var on_gid = null;
 	var torrent_file = null, file_type = null;
 	return {
@@ -101,34 +103,98 @@ var YAAW = (function() {
 				$('#add-task-alert').hide();
 			});
 			$("#menuMoveTop").live("click", function() {
-				YAAW.contextmenu.movetop();
+				if (selected_tasks) {
+					YAAW.tasks.movetop();
+					YAAW.tasks.unSelectAll();
+				} else {
+					YAAW.contextmenu.movetop();
+				}
 			});
 			$("#menuMoveUp").live("click", function() {
-				YAAW.contextmenu.moveup();
+				if (selected_tasks) {
+					YAAW.tasks.moveup();
+					YAAW.tasks.unSelectAll();
+				} else {
+					YAAW.contextmenu.moveup();
+				}
 			});
 			$("#menuMoveDown").live("click", function() {
-				YAAW.contextmenu.movedown();
+				if (selected_tasks) {
+					YAAW.tasks.movedown();
+					YAAW.tasks.unSelectAll();
+				} else {
+					YAAW.contextmenu.movedown();
+				}
 			});
 			$("#menuMoveEnd").live("click", function() {
-				YAAW.contextmenu.moveend();
+				if (selected_tasks) {
+					YAAW.tasks.moveend();
+					YAAW.tasks.unSelectAll();
+				} else {
+					YAAW.contextmenu.moveend();
+				}
 			});
 			$("#menuRestart").live("click", function() {
-				YAAW.contextmenu.restart();
+				if (selected_tasks) {
+					YAAW.tasks.restart();
+					YAAW.tasks.unSelectAll();
+				} else {
+					YAAW.contextmenu.restart();
+				}
 			});
 			$("#menuStart").live("click", function() {
-				YAAW.contextmenu.unpause();
+				if (selected_tasks) {
+					YAAW.tasks.unpause();
+					YAAW.tasks.unSelectAll();
+				} else {
+					YAAW.contextmenu.unpause();
+				}
 			});
 			$("#menuPause").live("click", function() {
-				YAAW.contextmenu.pause();
+				if (selected_tasks) {
+					YAAW.tasks.pause();
+					YAAW.tasks.unSelectAll();
+				} else {
+					YAAW.contextmenu.pause();
+				}
 			});
 			$("#menuRemove").live("click", function() {
-				YAAW.contextmenu.remove();
+				if (selected_tasks) {
+					YAAW.tasks.remove();
+					YAAW.tasks.unSelectAll();
+				} else {
+					YAAW.contextmenu.remove();
+				}
 			});
 
 			$("[rel=tooltip]").tooltip({"placement": "bottom"});
 
-			$(".task .select-box").live("click", function() {
-				YAAW.tasks.toggle($(this).parents(".task"));
+			$(".task .select-box").live("click", function(e) {
+				if (!e.shiftKey) {
+					YAAW.tasks.toggle($(this).parents(".task"));
+					selected_range_start = $(this).parents(".task").hasClass("selected") ? $(this).parents(".task")[0] : null;
+					selected_range_close = null;
+				} else {
+					YAAW.tasks.select($(this).parents(".task"));
+					if (!selected_range_start)
+						selected_range_start = $(this).parents(".task")[0];
+					else if (!selected_range_close)
+						selected_range_close = $(this).parents(".task")[0];
+				}
+				if (selected_range_start && selected_range_close) {
+					if (selected_range_start == selected_range_close) {
+						selected_range_close = null;
+					} else {
+						var task_lists = $('.tasks-table .task');
+						var task_in_range = false;
+						$(".tasks-table .task").each(function(i, n) {
+							if (n == selected_range_start || n == selected_range_close) task_in_range = !task_in_range;
+							if (task_in_range) YAAW.tasks.select(n);
+						});
+						selected_range_start = selected_range_close;
+						selected_range_close = null;
+					}
+				}
 				YAAW.tasks.check_select();
 			});
 
@@ -683,6 +749,16 @@ var YAAW = (function() {
 				return gids;
 			},
 
+			restart: function() {
+				var gids = new Array();
+				$(".tasks-table .task.selected").each(function(i, n) {
+					var status = n.getAttribute("data-status");
+					if (status == "removed" || status == "complete" || status == "error")
+						gids.push(n.getAttribute("data-gid"));
+				});
+				if (gids.length) ARIA2.restart_task(gids);
+			},
+
 			pause: function() {
 				var gids = new Array();
 				$(".tasks-table .task.selected").each(function(i, n) {
@@ -722,6 +798,48 @@ var YAAW = (function() {
 				if (gids.length) ARIA2.remove_result(gids);
 			},
 
+			movetop: function() {
+				var gids = new Array();
+				$(".tasks-table .task.selected").each(function(i, n) {
+					if (n.getAttribute("data-status") == "waiting" ||
+						n.getAttribute("data-status") == "paused")
+						gids.push(n.getAttribute("data-gid"));
+				});
+				gids.reverse();
+				ARIA2.change_selected_pos(gids, 0, 'POS_SET');
+			},
+
+			moveup: function() {
+				var gids = new Array();
+				$(".tasks-table .task.selected").each(function(i, n) {
+					if (n.getAttribute("data-status") == "waiting" ||
+						n.getAttribute("data-status") == "paused")
+						gids.push(n.getAttribute("data-gid"));
+				});
+				ARIA2.change_selected_pos(gids, -1, 'POS_CUR');
+			},
+
+			movedown: function() {
+				var gids = new Array();
+				$(".tasks-table .task.selected").each(function(i, n) {
+					if (n.getAttribute("data-status") == "waiting" ||
+						n.getAttribute("data-status") == "paused")
+						gids.push(n.getAttribute("data-gid"));
+				});
+				gids.reverse();
+				ARIA2.change_selected_pos(gids, 1, 'POS_CUR');
+			},
+
+			moveend: function() {
+				var gids = new Array();
+				$(".tasks-table .task.selected").each(function(i, n) {
+					if (n.getAttribute("data-status") == "waiting" ||
+						n.getAttribute("data-status") == "paused")
+						gids.push(n.getAttribute("data-gid"));
+				});
+				ARIA2.change_selected_pos(gids, 0, 'POS_END');
+			},
+
 			info: function(task) {
 				task.addClass("info-open");
 				task.after(YAAW.tpl.info_box({gid: task.attr("data-gid")}));
@@ -747,18 +865,6 @@ var YAAW = (function() {
 		contextmenu: {
 			init: function() {
 				$(".task").live("contextmenu", function(ev) {
-					var contextmenu_position_y = ev.clientY
-					var contextmenu_position_x = ev.clientX;
-					if ($(window).height() - ev.clientY < 200) {
-						contextmenu_position_y = ev.clientY - $("#task-contextmenu").height();
-					}
-					if ($(window).width() - ev.clientX < 200) {
-						contextmenu_position_x = ev.clientX - $("#task-contextmenu").width();
-					}
-					$("#task-contextmenu").css("top", contextmenu_position_y)
-					.css("left", contextmenu_position_x).show();
-					on_gid = ""+this.getAttribute("data-gid");
-
 					var status = this.getAttribute("data-status");
 					if (status == "waiting" || status == "paused") {
 						$("#task-contextmenu .task-move").show();
@@ -768,15 +874,32 @@ var YAAW = (function() {
 					if (status == "removed" || status == "complete" || status == "error") {
 						$(".task-restart").show();
 						$(".task-start").hide();
+						$(".task-pause").hide();
 					} else {
 						$(".task-restart").hide();
-						$(".task-start").show();
+						if (status == "active" || status == "waiting") {
+							$(".task-start").hide();
+							$(".task-pause").show();
+						} else {
+							$(".task-start").show();
+							$(".task-pause").hide();
+						}
 					}
 					if (status != "waiting" || status != "active") {
 						$(".task-pause").hide();
 					} else {
 						$(".task-pause").show();
 					}
+					var contextmenu_position_y = ev.clientY;
+					var contextmenu_position_x = ev.clientX;
+					if ($(window).height() - ev.clientY < 200) {
+						contextmenu_position_y = ev.clientY - $("#task-contextmenu").height();
+					}
+					if ($(window).width() - ev.clientX < 200) {
+						contextmenu_position_x = ev.clientX - $("#task-contextmenu").width();
+					}
+					$("#task-contextmenu").css("top", contextmenu_position_y).css("left", contextmenu_position_x).show();
+					on_gid = "" + this.getAttribute("data-gid");
 					return false;
 				}).live("mouseout", function(ev) {
 					// toElement is not available in Firefox, use relatedTarget instead.
@@ -913,6 +1036,7 @@ var YAAW = (function() {
 				$("#setting-form input:radio[name=refresh_interval][value="+this.refresh_interval+"]").attr("checked", true);
 				$("#setting-form input:radio[name=finish_notification][value="+this.finish_notification+"]").attr("checked", true);
 				if (this.jsonrpc_history.length) {
+					$(".rpc-path-wrap .dropdown-menu").remove();
 					var content = '<ul class="dropdown-menu">';
 					$.each(this.jsonrpc_history, function(n, e) {
 						content += '<li><a href="javascript:;">'+e+'</a></li>';
