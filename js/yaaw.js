@@ -90,6 +90,9 @@ var YAAW = (function() {
 			$("#btnSelectStopped").live("click", function() {
 				YAAW.tasks.selectStopped();
 			});
+			$("#btnSelectFinished").live("click", function() {
+				YAAW.tasks.selectFinished();
+			});
 			$("#btnStartAll").live("click", function() {
 				ARIA2.unpause_all();
 			});
@@ -757,6 +760,15 @@ var YAAW = (function() {
 						gids.push(n.getAttribute("data-gid"));
 				});
 				if (gids.length) ARIA2.restart_task(gids);
+			},
+
+			selectFinished: function() {
+				var _this = this;
+				this.unSelectAll(true);
+				$(".tasks-table .task[data-status=complete]").each(function(i, n) {
+					_this.select(n);
+				});
+				this.check_select();
 			},
 
 			pause: function() {
